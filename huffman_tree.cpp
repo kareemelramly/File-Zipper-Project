@@ -112,7 +112,7 @@ public:
     vector(int chosen_size) {
         size = chosen_size;
         array = new T[size];
-        count = 0; // Starts empty, regardless of capacity
+        count = size;
     }
 
     // Constructor with initial capacity and default value
@@ -144,9 +144,15 @@ public:
     vector& operator=(vector other) {
         std::swap(size, other.size);
         std::swap(count, other.count);
-        std::swap(array, other.array);
+        if(array)
+            delete array;
+        array = new T[size];
+        for (int i = 0; i < count; ++i) {
+            array[i] = other.array[i];
+        }
         return *this;
     }
+
 
     // Destructor
     ~vector() {
@@ -333,7 +339,17 @@ public:
         return array.empty();
     }
 };
-
+//function returns the frequency array from some string
+//String s is better to contain all characters of s
+vector<int> frequency_array(string s){
+    //There are 96 characters in ASCII code. The first element 
+    //has ascii code 32, which is ' '
+    vector<int>freq(96,0);
+    for(auto character : s){
+        freq[character-' ']++;
+    }
+    return freq;
+}
 int main() {
     // Test the PriorityQueue (Min-Heap)
     PriorityQueue pq;
@@ -354,6 +370,5 @@ int main() {
     // New minimum is Freq 5
     cout << pq.getMin().data << endl; // Output: 3
     pq.removeMin(); // Remove node with Freq 5
-
     return 0;
 }
