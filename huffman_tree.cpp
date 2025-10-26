@@ -2,6 +2,15 @@
 #include<string>
 #include<stdexcept> // Required for runtime_error and out_of_range
 #include<utility> // Required for std::swap
+#include<fstream>  //Required for file operations
+#include<sstream>  // Required for string stream
+
+//Special character for Huffman coding
+#define INTERNAL_NODE_CHARACTER char(128)
+#define PSEUDO_EOF char(129)
+#define CHARACTER_CODE_SEPERATOR char(130)
+#define HEADER_ENTRY_SEPERATOR char(131)
+#define HEADER_TEXT_SEPERATOR char(132)
 
 using namespace std;
 
@@ -350,6 +359,263 @@ vector<int> frequency_array(string s){
     }
     return freq;
 }
+
+
+// Huffman Coding class
+class Huffman {
+
+private:
+    vector<string> codeMap;   //Maps character to their huffman codes
+
+public:
+
+    //Compress input file
+    void CompressToFile(string inputFile, string outputFile)
+    {
+
+        // Error in case file can't be opened
+        ifstream inputStream(inputFile);
+        if (!inputStream) {
+            throw runtime_error("Cannot open input file: " + inputFile);
+        }
+        string fileContent;
+        char character;
+        while (inputStream.get(character)) {
+            fileContent += character;
+        }
+        inputStream.close();
+
+        // Build frequency array and Huffman tree
+        vector<int> freq = frequency_array(fileContent);
+        Node* huffmanTree = BuildHuffmanTree(freq);
+
+        // Initialize codeMap and generate codes
+        codeMap = vector<string>(PSEUDO_EOF - ' ' + 1, "");
+        EncodeCharacters(huffmanTree, "");
+
+        // Write compressed file
+        ofstream outputStream(outputFile, ios::binary);
+        WriteHeader(outputStream);
+
+        //Encode text
+        string encodedText;
+        for (char c : fileContent) {
+            int index = c - ' ';
+            if (index >= 0 && index < codeMap.getSize()) {
+                encodedText += codeMap[index];
+            }
+        }
+
+        // Add PSEUDO_EOF
+        encodedText += codeMap[PSEUDO_EOF - ' '];
+
+        // Pad with zeros to make complete bytes
+        int remainder = encodedText.length() % 8;
+        if (remainder != 0) {
+            encodedText += string(8 - remainder, '0');
+        }
+
+        // Convert binary string to bytes and write
+        for (size_t i = 0; i < encodedText.length(); i += 8) {
+            string byteStr = encodedText.substr(i, 8);
+            char byte = static_cast<char>(stoi(byteStr, nullptr, 2));
+            outputStream.put(byte);
+        }
+
+        outputStream.close();
+        delete huffmanTree;
+    }
+
+    //Generate haffman codes for characters by traversing the tree
+    void EncodeCharacters(Node* rootnode, string code)
+    {
+        if (!rootnode)
+            return;
+
+        // If the node is a leaf node, it stores its code
+        if (rootnode->data != INTERNAL_NODE_CHARACTER) {
+            int index= rootnode->data - ' ';
+            if (index >= 0 && index < codeMap.getSize()) {
+                codeMap[index] = code;
+            }
+
+            return;
+        }
+        //Recursion call to traverse the tree
+        EncodeCharacters(rootnode->left, code + "0");
+        EncodeCharacters(rootnode->right, code + "1");
+
+    }
+
+
+    //Building Huffman tree based on codeMap
+    Node* BuildHuffmanTree( vector<int>& freq) {
+        PriorityQueue pq1;
+
+        // Create leaf node for all characters that have frequency value
+        for (int i=0; i< freq.getSize(); i++) {
+            if (freq[i] > 0) {
+                char character = static_cast<char>(i + ' ');
+                pq1.insert(Node(character, freq[i]));
+            }
+        }
+
+        //PSEUDO_EOF marker- end of the file
+        pq1.insert(Node(PSEUDO_EOF, 1));
+
+        //Build Huufman tree by combining nodes
+        while (!pq1.empty()) {
+            Node left= pq1.getMin();
+            pq1.removeMin();
+
+            if (pq1.empty()) {
+                return new Node(left);
+            }
+            Node right= pq1.getMin();
+            pq1.removeMin();
+
+            //Create Internal node by summing frequency
+            Node* internalNode= new Node(INTERNAL_NODE_CHARACTER, left.frequency + right.frequency, new Node(left),new Node(right));
+            pq1.insert(*internalNode);
+
+        }
+        return nullptr;
+    }
+
+
+
+
+
+    //Write a header line with the characters and their huffman codes
+    void WriteHeader(ofstream& outputStream)
+    {
+        for (int i=0; i< codeMap.getSize(); i++) {
+            if (!codeMap[i].empty()) {
+                char character= static_cast<char>(i + ' ');
+                outputStream.put(character);
+                outputStream.put(CHARACTER_CODE_SEPERATOR);
+                outputStream << codeMap[i];
+                outputStream.put(HEADER_ENTRY_SEPERATOR);
+            }
+        }
+        outputStream.put(HEADER_TEXT_SEPERATOR);
+    }
+
+    // Decompress binary string to file
+    void DecompressToFile(string codeString, Node* rootNode, string decompressedFileName) {
+        ofstream outputStream(decompressedFileName);
+        if (!outputStream) {
+            throw runtime_error("Cannot open output file: " + decompressedFileName);
+        }
+
+        Node* currentNode = rootNode;
+        for (size_t i = 0; i < codeString.length(); i++) {
+            if (codeString[i] == '0') {
+                currentNode = currentNode->left;
+            } else {
+                currentNode = currentNode->right;
+            }
+
+            if (!currentNode->left && !currentNode->right) {
+                if (currentNode->data == PSEUDO_EOF) {
+                    break;
+                }
+                outputStream.put(currentNode->data);
+                currentNode = rootNode;
+            }
+        }
+
+        outputStream.close();
+    }
+
+
+    //Function to decompress files
+    void DecompressFile(string compressedfile, string decompressedfile)
+    {
+        //Check if the compressed file can be opened
+        ifstream inputStream(compressedfile, ios::binary);
+        if (!inputStream) {
+            throw runtime_error("Cannot open compressed file: " + compressedfile);
+        }
+
+        ReadHeader(inputStream);
+        string codeString;
+
+        //Convert bytes to binary string
+        char byte;
+        while (inputStream.get(byte)) {
+            for (int i=7; i>=0; i--) {
+                codeString += (byte & (1 << i)) ? '1' : '0';
+            }
+        }
+        inputStream.close();
+
+        Node* rootNode= BuildDecodingTree();
+        DecompressToFile(codeString, rootNode, decompressedfile);
+        delete rootNode;
+
+    }
+
+    // Read header and reconstruct codeMap
+    void ReadHeader(ifstream& inputStream) {
+        codeMap = vector<string>(96, "");
+        char character;
+        inputStream.get(character);
+        char key = character;
+
+        while (character != HEADER_TEXT_SEPERATOR) {
+            if (character == CHARACTER_CODE_SEPERATOR) {
+                string code;
+                inputStream.get(character);
+                while (character != HEADER_ENTRY_SEPERATOR) {
+                    code += character;
+                    inputStream.get(character);
+                }
+                int index = key - ' ';
+                if (index >= 0 && index < codeMap.getSize()) {
+                    codeMap[index] = code;
+                }
+            } else {
+                key = character;
+            }
+            inputStream.get(character);
+        }
+    }
+
+    // Build decoding tree from codeMap
+    Node* BuildDecodingTree() {
+        Node* rootNode = new Node(INTERNAL_NODE_CHARACTER, 0);
+
+        for (int i = 0; i < codeMap.getSize(); i++) {
+            if (!codeMap[i].empty()) {
+                char character = static_cast<char>(i + ' ');
+                Node* currentNode = rootNode;
+                string code = codeMap[i];
+
+                for (size_t j = 0; j < code.length(); j++) {
+                    if (code[j] == '0') {
+                        if (!currentNode->left) {
+                            currentNode->left = new Node(INTERNAL_NODE_CHARACTER, 0);
+                        }
+                        currentNode = currentNode->left;
+                    } else {
+                        if (!currentNode->right) {
+                            currentNode->right = new Node(INTERNAL_NODE_CHARACTER, 0);
+                        }
+                        currentNode = currentNode->right;
+                    }
+                }
+                // Set the character at the leaf node
+                currentNode->data = character;
+            }
+        }
+        return rootNode;
+    }
+
+
+
+
+};
 int main() {
     // Test the PriorityQueue (Min-Heap)
     PriorityQueue pq;
