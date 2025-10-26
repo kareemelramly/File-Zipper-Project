@@ -11,6 +11,7 @@
 #define CHARACTER_CODE_SEPERATOR char(130)
 #define HEADER_ENTRY_SEPERATOR char(131)
 #define HEADER_TEXT_SEPERATOR char(132)
+#define FIRST_ASCI_CHARACTER char(0)
 
 using namespace std;
 
@@ -150,11 +151,11 @@ public:
     }
 
     // Assignment Operator
-    vector& operator=(vector other) {
-        std::swap(size, other.size);
-        std::swap(count, other.count);
+    vector& operator=(const vector& other) {
+        size = other.size;
+        count=other.count;
         if(array)
-            delete array;
+            delete [] array;
         array = new T[size];
         for (int i = 0; i < count; ++i) {
             array[i] = other.array[i];
@@ -351,11 +352,11 @@ public:
 //function returns the frequency array from some string
 //String s is better to contain all characters of s
 vector<int> frequency_array(string s){
-    //There are 96 characters in ASCII code. The first element 
-    //has ascii code 32, which is ' '
-    vector<int>freq(96,0);
+    //There are 127 characters in printable ASCII code. The first element 
+    //has ascii code 32, which is FIRST_ASCI_CHARACHTER
+    vector<int>freq(127,0);
     for(auto character : s){
-        freq[character-' ']++;
+        freq[character-FIRST_ASCI_CHARACTER]++;
     }
     return freq;
 }
@@ -366,6 +367,11 @@ class Huffman {
 
 private:
     vector<string> codeMap;   //Maps character to their huffman codes
+    //makes_sure the value of the casting is a correct value
+    int convertToASCII(int value){
+        if(value<0) return value+256;
+        else return value;
+    }
 
 public:
 
@@ -390,7 +396,7 @@ public:
         Node* huffmanTree = BuildHuffmanTree(freq);
 
         // Initialize codeMap and generate codes
-        codeMap = vector<string>(PSEUDO_EOF - ' ' + 1, "");
+        codeMap = vector<string>(convertToASCII(PSEUDO_EOF - FIRST_ASCI_CHARACTER + 1), "");
         EncodeCharacters(huffmanTree, "");
 
         // Write compressed file
@@ -400,14 +406,14 @@ public:
         //Encode text
         string encodedText;
         for (char c : fileContent) {
-            int index = c - ' ';
+            int index = convertToASCII(c - FIRST_ASCI_CHARACTER);
             if (index >= 0 && index < codeMap.getSize()) {
                 encodedText += codeMap[index];
             }
         }
 
         // Add PSEUDO_EOF
-        encodedText += codeMap[PSEUDO_EOF - ' '];
+        encodedText += codeMap[convertToASCII(PSEUDO_EOF - FIRST_ASCI_CHARACTER)];
 
         // Pad with zeros to make complete bytes
         int remainder = encodedText.length() % 8;
@@ -426,6 +432,8 @@ public:
         delete huffmanTree;
     }
 
+    private:
+
     //Generate haffman codes for characters by traversing the tree
     void EncodeCharacters(Node* rootnode, string code)
     {
@@ -434,7 +442,7 @@ public:
 
         // If the node is a leaf node, it stores its code
         if (rootnode->data != INTERNAL_NODE_CHARACTER) {
-            int index= rootnode->data - ' ';
+            int index= convertToASCII(rootnode->data - FIRST_ASCI_CHARACTER);
             if (index >= 0 && index < codeMap.getSize()) {
                 codeMap[index] = code;
             }
@@ -455,7 +463,7 @@ public:
         // Create leaf node for all characters that have frequency value
         for (int i=0; i< freq.getSize(); i++) {
             if (freq[i] > 0) {
-                char character = static_cast<char>(i + ' ');
+                char character = static_cast<char>(convertToASCII(i + FIRST_ASCI_CHARACTER));
                 pq1.insert(Node(character, freq[i]));
             }
         }
@@ -491,7 +499,7 @@ public:
     {
         for (int i=0; i< codeMap.getSize(); i++) {
             if (!codeMap[i].empty()) {
-                char character= static_cast<char>(i + ' ');
+                char character= static_cast<char>(i + FIRST_ASCI_CHARACTER);
                 outputStream.put(character);
                 outputStream.put(CHARACTER_CODE_SEPERATOR);
                 outputStream << codeMap[i];
@@ -511,9 +519,13 @@ public:
         Node* currentNode = rootNode;
         for (size_t i = 0; i < codeString.length(); i++) {
             if (codeString[i] == '0') {
+                if(currentNode->left)
                 currentNode = currentNode->left;
+                else break;
             } else {
+                if(currentNode->right)
                 currentNode = currentNode->right;
+                else break;
             }
 
             if (!currentNode->left && !currentNode->right) {
@@ -528,7 +540,7 @@ public:
         outputStream.close();
     }
 
-
+    public:
     //Function to decompress files
     void DecompressFile(string compressedfile, string decompressedfile)
     {
@@ -555,10 +567,11 @@ public:
         delete rootNode;
 
     }
-
+    private:
     // Read header and reconstruct codeMap
     void ReadHeader(ifstream& inputStream) {
-        codeMap = vector<string>(96, "");
+        vector<string>freq(127, " ");
+        codeMap = freq;
         char character;
         inputStream.get(character);
         char key = character;
@@ -571,7 +584,7 @@ public:
                     code += character;
                     inputStream.get(character);
                 }
-                int index = key - ' ';
+                int index = convertToASCII(key - FIRST_ASCI_CHARACTER);
                 if (index >= 0 && index < codeMap.getSize()) {
                     codeMap[index] = code;
                 }
@@ -588,7 +601,7 @@ public:
 
         for (int i = 0; i < codeMap.getSize(); i++) {
             if (!codeMap[i].empty()) {
-                char character = static_cast<char>(i + ' ');
+                char character = static_cast<char>(i + FIRST_ASCI_CHARACTER);
                 Node* currentNode = rootNode;
                 string code = codeMap[i];
 
@@ -636,5 +649,14 @@ int main() {
     // New minimum is Freq 5
     cout << pq.getMin().data << endl; // Output: 3
     pq.removeMin(); // Remove node with Freq 5
+
+    //Test Huffman
+    try{
+    Huffman Test;
+    Test.CompressToFile("test.txt","output.txt");
+    Test.DecompressFile("output.txt","final_result.txt");
+    }catch(...){
+        cout<<"lol\n";
+    }
     return 0;
 }
