@@ -4,7 +4,7 @@
 #include<utility> // Required for std::swap
 #include<fstream>  //Required for file operations
 #include<sstream>  // Required for string stream
-
+#include<limits>
 //Special character for Huffman coding
 #define INTERNAL_NODE_CHARACTER char(128)
 #define PSEUDO_EOF char(129)
@@ -19,7 +19,7 @@ using namespace std;
 class Node {
 public:
     int frequency; // Key for the priority queue (min-heap)
-    int data;      // Value stored in the node (e.g., ASCII code)
+    int data;      // Value stored in the node (such as ASCII code)
     Node *left, *right; // Pointers for tree structure
 
     // Parameterized Constructor
@@ -38,8 +38,7 @@ public:
         right = nullptr;
     }
 
-    // Deep Copy Constructor: Essential for correct memory management (Rule of Three/Five)
-    // It recursively creates new child nodes to prevent a "double free" crash.
+    // Deep Copy Constructor
     Node(const Node& other) {
         data = other.data;
         frequency = other.frequency;
@@ -48,12 +47,14 @@ public:
         right = other.right ? new Node(*other.right) : nullptr;
     }
 
-    // Copy Assignment Operator: Uses the copy-and-swap idiom for strong exception safety.
     Node& operator =(Node other) { 
-        std::swap(data, other.data);
-        std::swap(frequency, other.frequency);
-        std::swap(left, other.left);
-        std::swap(right, other.right);
+        data = other.data;
+        frequency = other.frequency;
+        // Recursively create new nodes for children (deep copy)
+        if(left) left->~Node();
+        if(right) right->~Node();
+        left = other.left ? new Node(*other.left) : nullptr;
+        right = other.right ? new Node(*other.right) : nullptr;
         return *this;
     }
 
@@ -91,12 +92,12 @@ public:
     }
 };
 
-// Custom dynamic array class (reimplementation of std::vector features)
+//Vector class
 template<typename T>
 class vector {
     T *array;
-    int size;   // Total capacity of the underlying array
-    int count;  // Number of elements currently in the vector
+    int size;   // Total capacity
+    int count;  // Number of elements in the vector
 
     // Helper function to double the capacity when full
     void resize() {
@@ -113,7 +114,7 @@ class vector {
 
         size = new_size;
         if (array)
-            delete[] array; // Must use delete[] for array deallocation
+            delete[] array; //free-memory allocation for the array
         array = temp;
     }
 
@@ -138,7 +139,7 @@ public:
     // Default Constructor
     vector() {
         size = 0;
-        array = nullptr; // Initialize array pointer to null
+        array = nullptr; 
         count = 0;
     }
 
@@ -213,7 +214,7 @@ public:
     // Public resize function to manually change capacity
     void resize(int new_size) {
         if (new_size < count) {
-            count = new_size; // Truncate elements if new size is smaller
+            count = new_size; // reduce number of elements if new size is smaller
         }
         T* temp = array;
         array = new T[new_size];
@@ -294,7 +295,7 @@ class PriorityQueue {
         }
     }
 
-    // Converts an arbitrary array into a valid heap (O(N) complexity)
+    // Converts an array into a valid heap (O(N) complexity)
     void buildHeap() {
         int sz = array.getSize();
         // Start from the last non-leaf node
@@ -349,6 +350,15 @@ public:
         return array.empty();
     }
 };
+//function that helps converting to ASCII
+int convertToASCII(int value){
+        if(value<0){
+            int new_val = value+256;
+            return new_val;
+        }else{
+            return value;
+        }
+}
 //function returns the frequency array from some string
 //String s is better to contain all characters of s
 vector<int> frequency_array(string s){
@@ -356,7 +366,9 @@ vector<int> frequency_array(string s){
     //has ascii code 32, which is FIRST_ASCI_CHARACHTER
     vector<int>freq(127,0);
     for(auto character : s){
-        freq[character-FIRST_ASCI_CHARACTER]++;
+        int index= convertToASCII(character-FIRST_ASCI_CHARACTER);
+        if(index > 126) continue;
+        freq[index]++;
     }
     return freq;
 }
@@ -367,12 +379,6 @@ class Huffman {
 
 private:
     vector<string> codeMap;   //Maps character to their huffman codes
-    //makes_sure the value of the casting is a correct value
-    int convertToASCII(int value){
-        if(value<0) return value+256;
-        else return value;
-    }
-
 public:
 
     //Compress input file
@@ -396,7 +402,7 @@ public:
         Node* huffmanTree = BuildHuffmanTree(freq);
 
         // Initialize codeMap and generate codes
-        codeMap = vector<string>(convertToASCII(PSEUDO_EOF - FIRST_ASCI_CHARACTER + 1), "");
+        codeMap = vector<string>(convertToASCII(PSEUDO_EOF - FIRST_ASCI_CHARACTER)+1, "");
         EncodeCharacters(huffmanTree, "");
 
         // Write compressed file
@@ -629,34 +635,88 @@ public:
 
 
 };
-int main() {
-    // Test the PriorityQueue (Min-Heap)
-    PriorityQueue pq;
-    
-    // Insert nodes (data, frequency)
-    pq.insert(Node(3, 5)); // Freq 5
-    pq.insert(Node(1, 1)); // Freq 1 (Min)
-    pq.insert(Node(4, 2)); // Freq 2
 
-    // Get minimum frequency node
-    cout << pq.getMin().data << endl; // Output: 1
-    pq.removeMin(); // Remove node with Freq 1
+class Program{
+    Huffman tree;
+    public:
+    void run(){
+    cout << "1- compress the file 2- decompress the file 3-exit" << endl;
+    cout << "Enter the choice ";
+    int choice;
 
-    // New minimum is Freq 2
-    cout << pq.getMin().data << endl; // Output: 4
-    pq.removeMin(); // Remove node with Freq 2
-
-    // New minimum is Freq 5
-    cout << pq.getMin().data << endl; // Output: 3
-    pq.removeMin(); // Remove node with Freq 5
-
-    //Test Huffman
-    try{
-    Huffman Test;
-    Test.CompressToFile("test.txt","output.txt");
-    Test.DecompressFile("output.txt","final_result.txt");
-    }catch(...){
-        cout<<"lol\n";
+    if (!(cin >> choice)) {
+        cout << "Invalid input. Please enter a number." << endl;
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        run();
+        return;
     }
+
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    
+    if (choice == 1) {
+        string input_path, output_path;
+        
+        cout << "Insert the path of your file without quotation marks: ";
+        getline(cin, input_path);
+        
+        cout << "Insert the path of the compressed file: ";
+        getline(cin, output_path);
+        
+        cout << "enter the name of the file" << endl;
+        string name;
+        
+        cin >> name;
+        
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        try {
+            tree.CompressToFile(input_path, output_path + name + ".txt");
+            cout << "Compression successful!" << endl;
+        } catch (...) {
+            cout << "error happened" << endl;
+            run();
+            return;
+        }
+        run();
+        
+    } else if (choice == 2) {
+        string input_path, output_path;
+        
+        cout << "Insert the path of your file without quotation marks: ";
+        getline(cin, input_path);
+        
+        cout << "Insert the path of the decompressed file: ";
+        getline(cin, output_path);
+        
+        cout << "enter the name of the file" << endl;
+        string name;
+        
+        cin >> name;
+        
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        try {
+            tree.DecompressFile(input_path, output_path + name + ".txt");
+            cout << "Decompression successful!" << endl;
+        } catch (...) {
+            cout << "error happened" << endl;
+            run();
+            return;
+        }
+        run();
+
+    } else if (choice == 3) {
+        cout << "The program has been terminated" << endl;
+        
+    } else {
+        cout << "Invalid Choice" << endl;
+        run();
+    }
+}
+};
+int main() {
+    Program program;
+    program.run();
     return 0;
 }
