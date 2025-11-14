@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "compress.h"
+#include "Decompress.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -20,7 +22,11 @@ public:
 private slots:
     void on_Compress_clicked();
 
+    void on_Decompress_clicked();
+
 private:
     Ui::MainWindow *ui;
+    compress *compres;
+    Decompress * decompress;
 };
 #endif // MAINWINDOW_H
