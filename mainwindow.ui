@@ -14,30 +14,48 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="Compress">
     <property name="geometry">
      <rect>
       <x>180</x>
       <y>290</y>
-      <width>83</width>
+      <width>111</width>
       <height>29</height>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Compress</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="Decompress">
     <property name="geometry">
      <rect>
       <x>510</x>
       <y>290</y>
-      <width>83</width>
+      <width>111</width>
       <height>29</height>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Decompress</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>160</y>
+      <width>301</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>File compression</string>
     </property>
    </widget>
   </widget>
