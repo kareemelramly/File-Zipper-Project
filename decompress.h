@@ -18,8 +18,11 @@ public:
 private slots:
     void on_decom_sel_clicked();
 
+    void on_Dodecompression_clicked();
+
 private:
     Ui::Decompress *ui;
+    QString selectedFilePath;
 };
 
 #endif // DECOMPRESS_H

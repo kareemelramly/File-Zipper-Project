@@ -353,7 +353,7 @@ public:
     }
 };
 //function that helps converting to ASCII
-int convertToASCII(int value){
+static int convertToASCII(int value){
         if(value<0){
             int new_val = value+256;
             return new_val;
@@ -363,7 +363,7 @@ int convertToASCII(int value){
 }
 //function returns the frequency array from some string
 //String s is better to contain all characters of s
-  ds::vector<int> frequency_array(string s){
+  static ds::vector<int> frequency_array(string s){
     //There are 127 characters in printable ASCII code. The first element 
     //has ascii code 32, which is FIRST_ASCI_CHARACHTER
     ds::vector<int>freq(127,0);

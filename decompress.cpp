@@ -1,7 +1,8 @@
 #include "decompress.h"
 #include "ui_decompress.h"
 #include "QFileDialog"
-
+#include "huffman_tree.cpp"
+#include "QMessageBox"
 Decompress::Decompress(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::Decompress)
@@ -24,6 +25,32 @@ void Decompress::on_decom_sel_clicked()
 
         // Set the label (or line edit) text to the file name
         ui->decom_sel->setText(baseName);
+    }
+        selectedFilePath = filename;
+
+}
+
+
+void Decompress::on_Dodecompression_clicked()
+{
+
+    if (selectedFilePath.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please select a file first!");
+        return;
+    }
+
+    // Get output path
+    QString outputFile = QFileDialog::getSaveFileName(this, "Save Decompressed File", "C:/decompressed.huff", "All Files (*.*)");
+    if (outputFile.isEmpty())
+        return;
+
+    // Use selectedFilePath (full path), not just filename!
+    try {
+        Huffman huffman;
+        huffman.DecompressFile(selectedFilePath.toStdString(), outputFile.toStdString());
+        QMessageBox::information(this, "Success", "File decompressed successfully!");
+    } catch (...) {
+        QMessageBox::critical(this, "Error", "Decompression failed!");
     }
 }
 
