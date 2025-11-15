@@ -1,6 +1,5 @@
 #ifndef COMPRESS_H
 #define COMPRESS_H
-
 #include <QDialog>
 
 namespace Ui {
@@ -17,6 +16,8 @@ public:
 
 private slots:
     void on_com_sel_clicked();
+
+    void on_docompression_clicked();
 
 private:
     Ui::compress *ui;

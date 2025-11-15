@@ -93,6 +93,7 @@ public:
 };
 
 //Vector class
+namespace ds{
 template<typename T>
 class vector {
     T *array;
@@ -234,10 +235,11 @@ public:
             throw runtime_error("The array is empty");
     }
 };
+}
 
 // Custom Priority Queue (Min-Heap) implementation using the vector class
 class PriorityQueue {
-    vector<Node> array; // The underlying array to store the heap elements
+    ds::vector<Node> array; // The underlying array to store the heap elements
 
     // Swaps two nodes
     void swap(Node& x, Node& y) {
@@ -306,7 +308,7 @@ class PriorityQueue {
 
 public:
     // Constructor that initializes the heap from a given vector
-    PriorityQueue(vector<Node>arr) {
+    PriorityQueue(ds::vector<Node>arr) {
         // Copy elements
         for (int i = 0; i < arr.getSize(); i++) {
             array.push_back(arr[i]);
@@ -361,10 +363,10 @@ int convertToASCII(int value){
 }
 //function returns the frequency array from some string
 //String s is better to contain all characters of s
-vector<int> frequency_array(string s){
+  ds::vector<int> frequency_array(string s){
     //There are 127 characters in printable ASCII code. The first element 
     //has ascii code 32, which is FIRST_ASCI_CHARACHTER
-    vector<int>freq(127,0);
+    ds::vector<int>freq(127,0);
     for(auto character : s){
         int index= convertToASCII(character-FIRST_ASCI_CHARACTER);
         if(index > 126) continue;
@@ -378,7 +380,7 @@ vector<int> frequency_array(string s){
 class Huffman {
 
 private:
-    vector<string> codeMap;   //Maps character to their huffman codes
+    ds::vector<string> codeMap;   //Maps character to their huffman codes
 public:
 
     //Compress input file
@@ -398,11 +400,11 @@ public:
         inputStream.close();
 
         // Build frequency array and Huffman tree
-        vector<int> freq = frequency_array(fileContent);
+        ds::vector<int> freq = frequency_array(fileContent);
         Node* huffmanTree = BuildHuffmanTree(freq);
 
         // Initialize codeMap and generate codes
-        codeMap = vector<string>(convertToASCII(PSEUDO_EOF - FIRST_ASCI_CHARACTER)+1, "");
+        codeMap = ds::vector<string>(convertToASCII(PSEUDO_EOF - FIRST_ASCI_CHARACTER)+1, "");
         EncodeCharacters(huffmanTree, "");
 
         // Write compressed file
@@ -463,7 +465,7 @@ public:
 
 
     //Building Huffman tree based on codeMap
-    Node* BuildHuffmanTree( vector<int>& freq) {
+    Node* BuildHuffmanTree( ds:: vector<int>& freq) {
         PriorityQueue pq1;
 
         // Create leaf node for all characters that have frequency value
@@ -576,7 +578,7 @@ public:
     private:
     // Read header and reconstruct codeMap
     void ReadHeader(ifstream& inputStream) {
-        vector<string>freq(127, " ");
+        ds::vector<string>freq(127, " ");
         codeMap = freq;
         char character;
         inputStream.get(character);
@@ -715,8 +717,10 @@ class Program{
     }
 }
 };
+/*
 int main() {
     Program program;
     program.run();
     return 0;
 }
+*/

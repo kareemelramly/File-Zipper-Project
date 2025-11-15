@@ -11,6 +11,7 @@ CONFIG += c++17
 SOURCES += \
     compress.cpp \
     decompress.cpp \
+    huffman_tree.cpp \
     main.cpp \
     mainwindow.cpp
 
