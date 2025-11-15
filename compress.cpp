@@ -18,48 +18,34 @@ compress::~compress()
 
 void compress::on_com_sel_clicked()
 {
-    QString filename= QFileDialog::getOpenFileName(this, "Select and open file", "C://");
+    QString filename = QFileDialog::getOpenFileName(this, "Select and open file", "C:/");
     if (!filename.isEmpty()) {
-        // Extract the base name (not full path)
         QFileInfo fileInfo(filename);
         QString baseName = fileInfo.fileName();
-
-        // Set the label (or line edit) text to the file name
-        ui->com_sel->setText(baseName);
+        ui->com_sel->setText(baseName);            // Show name to user
+        selectedFilePath = filename;              // Store the full path!
     }
 }
 
 
 void compress::on_docompression_clicked()
 {
-    // Get the selected file path from the button text
-    QString inputFile = ui->com_sel->text();
 
-    // Check if a file is selected
-    if (inputFile.isEmpty() || inputFile == "Select File") {
+    if (selectedFilePath.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please select a file first!");
         return;
     }
 
-    // Let user choose where to save compressed file
-    QString outputFile = QFileDialog::getSaveFileName(
-        this,
-        "Save Compressed File",
-        "C://compressed.huff",
-        "All Files (*)"
-        );
+    // Get output path
+    QString outputFile = QFileDialog::getSaveFileName(this, "Save Compressed File", "C:/compressed.huff", "All Files (*.*)");
+    if (outputFile.isEmpty())
+        return;
 
-    if (outputFile.isEmpty()) {
-        return; // User cancelled
-    }
-
+    // Use selectedFilePath (full path), not just filename!
     try {
-        // Use Huffman directly - SIMPLEST APPROACH
         Huffman huffman;
-        huffman.CompressToFile(inputFile.toStdString(), outputFile.toStdString());
-
+        huffman.CompressToFile(selectedFilePath.toStdString(), outputFile.toStdString());
         QMessageBox::information(this, "Success", "File compressed successfully!");
-
     } catch (...) {
         QMessageBox::critical(this, "Error", "Compression failed!");
     }

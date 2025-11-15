@@ -21,6 +21,7 @@ private slots:
 
 private:
     Ui::compress *ui;
+     QString selectedFilePath;
 };
 
 #endif // COMPRESS_H
