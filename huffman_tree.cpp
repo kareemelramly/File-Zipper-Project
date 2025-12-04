@@ -354,22 +354,17 @@ public:
 };
 //function that helps converting to ASCII
 static int convertToASCII(int value){
-        if(value<0){
-            int new_val = value+256;
-            return new_val;
-        }else{
-            return value;
-        }
+    return (value+256)%256;
 }
 //function returns the frequency array from some string
 //String s is better to contain all characters of s
   static ds::vector<int> frequency_array(string s){
     //There are 127 characters in printable ASCII code. The first element 
     //has ascii code 32, which is FIRST_ASCI_CHARACHTER
-    ds::vector<int>freq(127,0);
+    ds::vector<int>freq(256,0);
     for(auto character : s){
         int index= convertToASCII(character-FIRST_ASCI_CHARACTER);
-        if(index > 126) continue;
+        if(index >=128 && index<=132 && index!=0) continue;
         freq[index]++;
     }
     return freq;
@@ -382,7 +377,9 @@ class Huffman {
 private:
     ds::vector<string> codeMap;   //Maps character to their huffman codes
 public:
+    Huffman():codeMap(256,""){
 
+    }
     //Compress input file
     void CompressToFile(string inputFile, string outputFile)
     {
@@ -506,7 +503,7 @@ public:
     void WriteHeader(ofstream& outputStream)
     {
         for (int i=0; i< codeMap.getSize(); i++) {
-            if (!codeMap[i].empty()) {
+            if (!codeMap[i].empty() && codeMap[i]!=" ") {
                 char character= static_cast<char>(i + FIRST_ASCI_CHARACTER);
                 outputStream.put(character);
                 outputStream.put(CHARACTER_CODE_SEPERATOR);
@@ -523,7 +520,7 @@ public:
         if (!outputStream) {
             throw runtime_error("Cannot open output file: " + decompressedFileName);
         }
-
+        codeMap = ds::vector<string>(256, "");
         Node* currentNode = rootNode;
         for (size_t i = 0; i < codeString.length(); i++) {
             if (codeString[i] == '0') {
@@ -578,7 +575,7 @@ public:
     private:
     // Read header and reconstruct codeMap
     void ReadHeader(ifstream& inputStream) {
-        ds::vector<string>freq(127, " ");
+        ds::vector<string>freq(256, "");
         codeMap = freq;
         char character;
         inputStream.get(character);
@@ -608,7 +605,7 @@ public:
         Node* rootNode = new Node(INTERNAL_NODE_CHARACTER, 0);
 
         for (int i = 0; i < codeMap.getSize(); i++) {
-            if (!codeMap[i].empty()) {
+            if (!codeMap[i].empty() && codeMap[i]!=" ") {
                 char character = static_cast<char>(i + FIRST_ASCI_CHARACTER);
                 Node* currentNode = rootNode;
                 string code = codeMap[i];
