@@ -21,6 +21,7 @@ class Ui_Decompress
 public:
     QPushButton *decom_sel;
     QPushButton *Dodecompression;
+    QPushButton *pushButton;
 
     void setupUi(QDialog *Decompress)
     {
@@ -33,6 +34,9 @@ public:
         Dodecompression = new QPushButton(Decompress);
         Dodecompression->setObjectName("Dodecompression");
         Dodecompression->setGeometry(QRect(210, 180, 191, 29));
+        pushButton = new QPushButton(Decompress);
+        pushButton->setObjectName("pushButton");
+        pushButton->setGeometry(QRect(250, 240, 83, 29));
 
         retranslateUi(Decompress);
 
@@ -44,6 +48,7 @@ public:
         Decompress->setWindowTitle(QCoreApplication::translate("Decompress", "Dialog", nullptr));
         decom_sel->setText(QCoreApplication::translate("Decompress", "Select a file", nullptr));
         Dodecompression->setText(QCoreApplication::translate("Decompress", "do decompression", nullptr));
+        pushButton->setText(QCoreApplication::translate("Decompress", "decompress", nullptr));
     } // retranslateUi
 
 };

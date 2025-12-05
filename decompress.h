@@ -20,6 +20,8 @@ private slots:
 
     void on_Dodecompression_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::Decompress *ui;
     QString selectedFilePath;

@@ -17,6 +17,7 @@ Decompress::~Decompress()
 
 void Decompress::on_decom_sel_clicked()
 {
+    qDebug()<<"click\n"<<Qt::endl;
     QString filename= QFileDialog::getOpenFileName(this, "Select and open file", "C://");
     if (!filename.isEmpty()) {
         // Extract the base name (not full path)
@@ -31,9 +32,11 @@ void Decompress::on_decom_sel_clicked()
 }
 
 
+
+
 void Decompress::on_Dodecompression_clicked()
 {
-
+    qDebug()<<"click\n"<<Qt::endl;
     if (selectedFilePath.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please select a file first!");
         return;
@@ -41,8 +44,10 @@ void Decompress::on_Dodecompression_clicked()
 
     // Get output path
     QString outputFile = QFileDialog::getSaveFileName(this, "Save Decompressed File", "C:/decompressed.huff", "All Files (*.*)");
-    if (outputFile.isEmpty())
+    if (outputFile.isEmpty()){
+        qDebug()<<"wow\n"<<Qt::endl;
         return;
+    }
 
     // Use selectedFilePath (full path), not just filename!
     try {
@@ -52,5 +57,11 @@ void Decompress::on_Dodecompression_clicked()
     } catch (...) {
         QMessageBox::critical(this, "Error", "Decompression failed!");
     }
+}
+
+
+void Decompress::on_pushButton_clicked()
+{
+     qDebug()<<"click\n"<<Qt::endl;
 }
 
