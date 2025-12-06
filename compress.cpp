@@ -48,7 +48,9 @@ void compress::on_com_sel_clicked()
         QFileInfo fileInfo(filename);
         QString baseName = fileInfo.fileName();
         ui->com_sel->setText(baseName);            // Show name to user
-        selectedFilePath = filename;              // Store the full path!
+        selectedFilePath = filename;            // Store the full path!
+        qint64 originalSize = fileInfo.size();
+        ui->before->setText(QString::number(originalSize) + " bytes");
     }
 }
 
@@ -122,9 +124,17 @@ void compress::on_docompression_clicked()
         if (totalBytes > 0)
             ratioPercent = int(100.0 * compressedSize / totalBytes);
 
-       // ui->progressBar->setValue(100);  // operation completed
+        // ui->progressBar->setValue(100);  // operation completed
         ui->percentageLabel->setText(QString::number(ratioPercent) + "%");
         //ui->speedLabel->setText("0 KB/s");
+        QFileInfo inInfo(selectedFilePath);
+        qint64 originalSize = inInfo.size();
+
+
+
+
+        ui->before->setText(QString::number(originalSize) + " bytes");
+        ui->after->setText(QString::number(compressedSize) + " bytes");
 
         QMessageBox::information(this, "Success", "File compressed successfully!");
     } catch (...) {
