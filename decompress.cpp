@@ -8,6 +8,7 @@ Decompress::Decompress(QWidget *parent)
     , ui(new Ui::Decompress)
 {
     ui->setupUi(this);
+    //ui->progressBar->setVisible(false);
 }
 
 Decompress::~Decompress()

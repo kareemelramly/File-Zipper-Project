@@ -12,6 +12,7 @@ class compress : public QDialog
 
 public:
     explicit compress(QWidget *parent = nullptr);
+    void onCompressionFinished(bool success);
     ~compress();
 
 private slots:
@@ -22,6 +23,7 @@ private slots:
 private:
     Ui::compress *ui;
      QString selectedFilePath;
+    QTimer* progressTimer;
 };
 
 #endif // COMPRESS_H

@@ -12,6 +12,8 @@
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
 
 QT_BEGIN_NAMESPACE
@@ -21,6 +23,9 @@ class Ui_compress
 public:
     QPushButton *com_sel;
     QPushButton *docompression;
+    QProgressBar *progressBar;
+    QLabel *percentageLabel;
+    QLabel *label;
 
     void setupUi(QDialog *compress)
     {
@@ -33,6 +38,17 @@ public:
         docompression = new QPushButton(compress);
         docompression->setObjectName("docompression");
         docompression->setGeometry(QRect(200, 240, 251, 29));
+        progressBar = new QProgressBar(compress);
+        progressBar->setObjectName("progressBar");
+        progressBar->setGeometry(QRect(200, 360, 251, 23));
+        progressBar->setValue(0);
+        progressBar->setTextVisible(true);
+        percentageLabel = new QLabel(compress);
+        percentageLabel->setObjectName("percentageLabel");
+        percentageLabel->setGeometry(QRect(410, 320, 63, 20));
+        label = new QLabel(compress);
+        label->setObjectName("label");
+        label->setGeometry(QRect(210, 320, 181, 20));
 
         retranslateUi(compress);
 
@@ -44,6 +60,8 @@ public:
         compress->setWindowTitle(QCoreApplication::translate("compress", "Dialog", nullptr));
         com_sel->setText(QCoreApplication::translate("compress", "select file ", nullptr));
         docompression->setText(QCoreApplication::translate("compress", "Do compression", nullptr));
+        percentageLabel->setText(QCoreApplication::translate("compress", "0%", nullptr));
+        label->setText(QCoreApplication::translate("compress", "Compression Percentage: ", nullptr));
     } // retranslateUi
 
 };

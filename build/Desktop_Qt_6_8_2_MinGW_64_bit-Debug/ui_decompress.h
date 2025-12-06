@@ -36,7 +36,7 @@ public:
         Dodecompression->setGeometry(QRect(210, 180, 191, 29));
         pushButton = new QPushButton(Decompress);
         pushButton->setObjectName("pushButton");
-        pushButton->setGeometry(QRect(250, 240, 83, 29));
+        pushButton->setGeometry(QRect(260, 240, 83, 29));
 
         retranslateUi(Decompress);
 
