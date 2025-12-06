@@ -15,7 +15,7 @@ compress::compress(QWidget *parent)
     , ui(new Ui::compress)
 {
     ui->setupUi(this);
-    ui->progressBar->setVisible(false);
+    //ui->progressBar->setVisible(false);
     ui->percentageLabel->setVisible(false);
     //ui->label->setVisible(false);
 
@@ -69,11 +69,11 @@ void compress::on_docompression_clicked()
         return;
 
     // Show and reset progress UI
-    ui->progressBar->setVisible(true);
+    //ui->progressBar->setVisible(true);
     ui->percentageLabel->setVisible(true);
     //ui->speedLabel->setVisible(true);
 
-    ui->progressBar->setValue(0);
+    //ui->progressBar->setValue(0);
     ui->percentageLabel->setText("0%");
     //ui->speedLabel->setText("0 KB/s");
 
@@ -99,7 +99,7 @@ void compress::on_docompression_clicked()
                              ? qMin(100, int(100.0 * currentBytes / (totalBytes * 0.6)))
                              : 0;
 
-        ui->progressBar->setValue(percentRun);
+        //ui->progressBar->setValue(percentRun);
         //ui->speedLabel->setText(QString::number(speedKBs, 'f', 1) + " KB/s");
 
         qApp->processEvents();
@@ -122,7 +122,7 @@ void compress::on_docompression_clicked()
         if (totalBytes > 0)
             ratioPercent = int(100.0 * compressedSize / totalBytes);
 
-        ui->progressBar->setValue(100);  // operation completed
+       // ui->progressBar->setValue(100);  // operation completed
         ui->percentageLabel->setText(QString::number(ratioPercent) + "%");
         //ui->speedLabel->setText("0 KB/s");
 
@@ -133,7 +133,7 @@ void compress::on_docompression_clicked()
     }
 
     // Optionally hide progress UI after dialog
-     ui->progressBar->setVisible(false);
+    // ui->progressBar->setVisible(false);
     // ui->percentageLabel->setVisible(false);
     // ui->speedLabel->setVisible(false);
 }

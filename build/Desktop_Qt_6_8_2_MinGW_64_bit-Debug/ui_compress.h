@@ -13,7 +13,6 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
 
 QT_BEGIN_NAMESPACE
@@ -23,7 +22,6 @@ class Ui_compress
 public:
     QPushButton *com_sel;
     QPushButton *docompression;
-    QProgressBar *progressBar;
     QLabel *percentageLabel;
     QLabel *label;
 
@@ -38,11 +36,6 @@ public:
         docompression = new QPushButton(compress);
         docompression->setObjectName("docompression");
         docompression->setGeometry(QRect(200, 240, 251, 29));
-        progressBar = new QProgressBar(compress);
-        progressBar->setObjectName("progressBar");
-        progressBar->setGeometry(QRect(200, 360, 251, 23));
-        progressBar->setValue(0);
-        progressBar->setTextVisible(true);
         percentageLabel = new QLabel(compress);
         percentageLabel->setObjectName("percentageLabel");
         percentageLabel->setGeometry(QRect(410, 320, 63, 20));
