@@ -73,8 +73,8 @@ public:
         label->setText(QCoreApplication::translate("compress", "Compression Percentage: ", nullptr));
         label_2->setText(QCoreApplication::translate("compress", "size before:", nullptr));
         label_3->setText(QCoreApplication::translate("compress", "size after:", nullptr));
-        before->setText(QCoreApplication::translate("compress", "TextLabel", nullptr));
-        after->setText(QCoreApplication::translate("compress", "TextLabel", nullptr));
+        before->setText(QString());
+        after->setText(QString());
     } // retranslateUi
 
 };
