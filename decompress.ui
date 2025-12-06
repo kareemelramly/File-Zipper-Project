@@ -39,6 +39,19 @@
     <string>do decompression</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>240</y>
+     <width>83</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>decompress</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
