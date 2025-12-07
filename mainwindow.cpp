@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    compres = nullptr;
+    compres = nullptr;      // Initialize pointers to null
     decompress = nullptr;
 }
 
@@ -21,12 +21,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_Compress_clicked()
 {
+    // Create dialog if it doesn't exist yet
     if (!compres) {
         compres = new compress(this);
     }
-   compres->show();
-   compres->raise();
-    compres->activateWindow();
+   compres->show();           // Show the dialog
+   compres->raise();          // Bring to front
+    compres->activateWindow(); // Give it focus
 
     //QString filename= QFileDialog::getOpenFileName(this, "Select and open file", "C://");
     //QMessageBox::information(this, "..", filename);
@@ -36,12 +37,13 @@ void MainWindow::on_Compress_clicked()
 
 void MainWindow::on_Decompress_clicked()
 {
+    // Create dialog if it doesn't exist yet
     if (!decompress) {
         decompress = new Decompress(this);
     }
-    decompress->show();
-    decompress->raise();
-    decompress->activateWindow();
+    decompress->show();           // Show the dialog
+    decompress->raise();          // Bring to front
+    decompress->activateWindow(); // Give it focus
 
 }
 

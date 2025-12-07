@@ -19,16 +19,16 @@ Decompress::~Decompress()
 void Decompress::on_decom_sel_clicked()
 {
     qDebug()<<"click\n"<<Qt::endl;
+    // Open file dialog to select compressed file
     QString filename= QFileDialog::getOpenFileName(this, "Select and open file", "C://");
     if (!filename.isEmpty()) {
-        // Extract the base name (not full path)
+        // Show just filename to user
         QFileInfo fileInfo(filename);
         QString baseName = fileInfo.fileName();
 
-        // Set the label (or line edit) text to the file name
         ui->decom_sel->setText(baseName);
     }
-        selectedFilePath = filename;
+        selectedFilePath = filename;  // Store full path for decompression
 
 }
 
@@ -38,19 +38,20 @@ void Decompress::on_decom_sel_clicked()
 void Decompress::on_Dodecompression_clicked()
 {
     qDebug()<<"click\n"<<Qt::endl;
+    // Check if file was selected
     if (selectedFilePath.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please select a file first!");
         return;
     }
 
-    // Get output path
-    QString outputFile = QFileDialog::getSaveFileName(this, "Save Decompressed File", "C:/decompressed.huff", "All Files (*.*)");
+    // Ask user where to save decompressed file
+    QString outputFile = QFileDialog::getSaveFileName(this, "Save Decompressed File", "C:/decompressed.txt", "All Files (*.*)");
     if (outputFile.isEmpty()){
         qDebug()<<"wow\n"<<Qt::endl;
         return;
     }
 
-    // Use selectedFilePath (full path), not just filename!
+    // Perform decompression
     try {
         Huffman huffman;
         huffman.DecompressFile(selectedFilePath.toStdString(), outputFile.toStdString());
@@ -63,6 +64,6 @@ void Decompress::on_Dodecompression_clicked()
 
 void Decompress::on_pushButton_clicked()
 {
-     qDebug()<<"click\n"<<Qt::endl;
+     qDebug()<<"click\n"<<Qt::endl;  // Placeholder button handler
 }
 

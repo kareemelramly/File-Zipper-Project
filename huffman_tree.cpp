@@ -352,20 +352,20 @@ public:
         return array.empty();
     }
 };
-//function that helps converting to ASCII
+// Convert value to valid ASCII range (0-255)
 static int convertToASCII(int value){
     return (value+256)%256;
 }
-//function returns the frequency array from some string
+// Count character frequencies in the input string
 //String s is better to contain all characters of s
   static ds::vector<int> frequency_array(string s){
     //There are 127 characters in printable ASCII code. The first element 
     //has ascii code 32, which is FIRST_ASCI_CHARACHTER
-    ds::vector<int>freq(256,0);
+    ds::vector<int>freq(256,0);  // Initialize frequency array
     for(auto character : s){
         int index= convertToASCII(character-FIRST_ASCI_CHARACTER);
-        if(index >=128 && index<=132 && index!=0) continue;
-        freq[index]++;
+        if(index >=128 && index<=132 && index!=0) continue;  // Skip special chars
+        freq[index]++;  // Increment count for this character
     }
     return freq;
 }
@@ -384,7 +384,7 @@ public:
     void CompressToFile(string inputFile, string outputFile)
     {
 
-        // Error in case file can't be opened
+        // Read entire file into memory
         ifstream inputStream(inputFile);
         if (!inputStream) {
             throw runtime_error("Cannot open input file: " + inputFile);
@@ -392,7 +392,7 @@ public:
         string fileContent;
         char character;
         while (inputStream.get(character)) {
-            fileContent += character;
+            fileContent += character;  // Build content string
         }
         inputStream.close();
 
@@ -400,36 +400,36 @@ public:
         ds::vector<int> freq = frequency_array(fileContent);
         Node* huffmanTree = BuildHuffmanTree(freq);
 
-        // Initialize codeMap and generate codes
+        // Generate Huffman codes for each character
         codeMap = ds::vector<string>(convertToASCII(PSEUDO_EOF - FIRST_ASCI_CHARACTER)+1, "");
         EncodeCharacters(huffmanTree, "");
 
-        // Write compressed file
+        // Write header (character codes) then compressed data
         ofstream outputStream(outputFile, ios::binary);
         WriteHeader(outputStream);
 
-        //Encode text
+        // Convert each character to its Huffman code
         string encodedText;
         for (char c : fileContent) {
             int index = convertToASCII(c - FIRST_ASCI_CHARACTER);
             if (index >= 0 && index < codeMap.getSize()) {
-                encodedText += codeMap[index];
+                encodedText += codeMap[index];  // Append code for this char
             }
         }
 
-        // Add PSEUDO_EOF
+        // Add end-of-file marker
         encodedText += codeMap[convertToASCII(PSEUDO_EOF - FIRST_ASCI_CHARACTER)];
 
-        // Pad with zeros to make complete bytes
+        // Pad to make it byte-aligned (multiple of 8 bits)
         int remainder = encodedText.length() % 8;
         if (remainder != 0) {
             encodedText += string(8 - remainder, '0');
         }
 
-        // Convert binary string to bytes and write
+        // Write binary data as bytes
         for (size_t i = 0; i < encodedText.length(); i += 8) {
-            string byteStr = encodedText.substr(i, 8);
-            char byte = static_cast<char>(stoi(byteStr, nullptr, 2));
+            string byteStr = encodedText.substr(i, 8);  // Get 8 bits
+            char byte = static_cast<char>(stoi(byteStr, nullptr, 2));  // Convert to byte
             outputStream.put(byte);
         }
 
@@ -445,16 +445,16 @@ public:
         if (!rootnode)
             return;
 
-        // If the node is a leaf node, it stores its code
+        // Leaf node found - store its code
         if (rootnode->data != INTERNAL_NODE_CHARACTER) {
             int index= convertToASCII(rootnode->data - FIRST_ASCI_CHARACTER);
             if (index >= 0 && index < codeMap.getSize()) {
-                codeMap[index] = code;
+                codeMap[index] = code;  // Save code for this character
             }
 
             return;
         }
-        //Recursion call to traverse the tree
+        // Traverse left (0) and right (1) subtrees
         EncodeCharacters(rootnode->left, code + "0");
         EncodeCharacters(rootnode->right, code + "1");
 
@@ -465,29 +465,29 @@ public:
     Node* BuildHuffmanTree( ds:: vector<int>& freq) {
         PriorityQueue pq1;
 
-        // Create leaf node for all characters that have frequency value
+        // Create leaf nodes for all characters that appear in file
         for (int i=0; i< freq.getSize(); i++) {
             if (freq[i] > 0) {
                 char character = static_cast<char>(convertToASCII(i + FIRST_ASCI_CHARACTER));
-                pq1.insert(Node(character, freq[i]));
+                pq1.insert(Node(character, freq[i]));  // Add to priority queue
             }
         }
 
-        //PSEUDO_EOF marker- end of the file
+        // Add end-of-file marker
         pq1.insert(Node(PSEUDO_EOF, 1));
 
-        //Build Huufman tree by combining nodes
+        // Build tree by repeatedly combining two smallest nodes
         while (!pq1.empty()) {
             Node left= pq1.getMin();
             pq1.removeMin();
 
             if (pq1.empty()) {
-                return new Node(left);
+                return new Node(left);  // Only one node left - it's the root
             }
             Node right= pq1.getMin();
             pq1.removeMin();
 
-            //Create Internal node by summing frequency
+            // Merge two nodes into internal node
             Node* internalNode= new Node(INTERNAL_NODE_CHARACTER, left.frequency + right.frequency, new Node(left),new Node(right));
             pq1.insert(*internalNode);
 
@@ -502,16 +502,17 @@ public:
     //Write a header line with the characters and their huffman codes
     void WriteHeader(ofstream& outputStream)
     {
+        // Write character-to-code mapping for decompression
         for (int i=0; i< codeMap.getSize(); i++) {
             if (!codeMap[i].empty() && codeMap[i]!=" ") {
                 char character= static_cast<char>(i + FIRST_ASCI_CHARACTER);
-                outputStream.put(character);
-                outputStream.put(CHARACTER_CODE_SEPERATOR);
-                outputStream << codeMap[i];
-                outputStream.put(HEADER_ENTRY_SEPERATOR);
+                outputStream.put(character);  // Write character
+                outputStream.put(CHARACTER_CODE_SEPERATOR);  // Separator
+                outputStream << codeMap[i];  // Write its code
+                outputStream.put(HEADER_ENTRY_SEPERATOR);  // Entry separator
             }
         }
-        outputStream.put(HEADER_TEXT_SEPERATOR);
+        outputStream.put(HEADER_TEXT_SEPERATOR);  // Mark end of header
     }
 
     // Decompress binary string to file
@@ -522,23 +523,25 @@ public:
         }
         codeMap = ds::vector<string>(256, "");
         Node* currentNode = rootNode;
+        // Traverse tree using binary codes
         for (size_t i = 0; i < codeString.length(); i++) {
             if (codeString[i] == '0') {
                 if(currentNode->left)
-                currentNode = currentNode->left;
+                currentNode = currentNode->left;  // Go left for 0
                 else break;
             } else {
                 if(currentNode->right)
-                currentNode = currentNode->right;
+                currentNode = currentNode->right;  // Go right for 1
                 else break;
             }
 
+            // Found a leaf node - write character and reset
             if (!currentNode->left && !currentNode->right) {
                 if (currentNode->data == PSEUDO_EOF) {
-                    break;
+                    break;  // End of file reached
                 }
-                outputStream.put(currentNode->data);
-                currentNode = rootNode;
+                outputStream.put(currentNode->data);  // Write decoded character
+                currentNode = rootNode;  // Start from root for next code
             }
         }
 
@@ -555,18 +558,19 @@ public:
             throw runtime_error("Cannot open compressed file: " + compressedfile);
         }
 
-        ReadHeader(inputStream);
+        ReadHeader(inputStream);  // Read character codes from header
         string codeString;
 
-        //Convert bytes to binary string
+        //Convert bytes back to binary string
         char byte;
         while (inputStream.get(byte)) {
             for (int i=7; i>=0; i--) {
-                codeString += (byte & (1 << i)) ? '1' : '0';
+                codeString += (byte & (1 << i)) ? '1' : '0';  // Extract bits
             }
         }
         inputStream.close();
 
+        // Rebuild tree and decompress
         Node* rootNode= BuildDecodingTree();
         DecompressToFile(codeString, rootNode, decompressedfile);
         delete rootNode;
@@ -579,22 +583,25 @@ public:
         codeMap = freq;
         char character;
         inputStream.get(character);
-        char key = character;
+        char key = character;  // Store current character
 
+        // Parse header until separator found
         while (character != HEADER_TEXT_SEPERATOR) {
             if (character == CHARACTER_CODE_SEPERATOR) {
+                // Read the code for current character
                 string code;
                 inputStream.get(character);
                 while (character != HEADER_ENTRY_SEPERATOR) {
                     code += character;
                     inputStream.get(character);
                 }
+                // Store code in map
                 int index = convertToASCII(key - FIRST_ASCI_CHARACTER);
                 if (index >= 0 && index < codeMap.getSize()) {
                     codeMap[index] = code;
                 }
             } else {
-                key = character;
+                key = character;  // New character found
             }
             inputStream.get(character);
         }
@@ -604,26 +611,28 @@ public:
     Node* BuildDecodingTree() {
         Node* rootNode = new Node(INTERNAL_NODE_CHARACTER, 0);
 
+        // Rebuild tree by following each character's code path
         for (int i = 0; i < codeMap.getSize(); i++) {
             if (!codeMap[i].empty() && codeMap[i]!=" ") {
                 char character = static_cast<char>(i + FIRST_ASCI_CHARACTER);
                 Node* currentNode = rootNode;
                 string code = codeMap[i];
 
+                // Create path through tree based on code
                 for (size_t j = 0; j < code.length(); j++) {
                     if (code[j] == '0') {
                         if (!currentNode->left) {
                             currentNode->left = new Node(INTERNAL_NODE_CHARACTER, 0);
                         }
-                        currentNode = currentNode->left;
+                        currentNode = currentNode->left;  // Go left for 0
                     } else {
                         if (!currentNode->right) {
                             currentNode->right = new Node(INTERNAL_NODE_CHARACTER, 0);
                         }
-                        currentNode = currentNode->right;
+                        currentNode = currentNode->right;  // Go right for 1
                     }
                 }
-                // Set the character at the leaf node
+                // Store character at leaf
                 currentNode->data = character;
             }
         }

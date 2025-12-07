@@ -20,13 +20,13 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_Compress_clicked();
+    void on_Compress_clicked();      // Opens compression dialog
 
-    void on_Decompress_clicked();
+    void on_Decompress_clicked();    // Opens decompression dialog
 
 private:
     Ui::MainWindow *ui;
-    compress *compres;
-    Decompress * decompress;
+    compress *compres;        // Compression dialog instance
+    Decompress * decompress;  // Decompression dialog instance
 };
 #endif // MAINWINDOW_H

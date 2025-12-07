@@ -16,14 +16,14 @@ public:
     ~compress();
 
 private slots:
-    void on_com_sel_clicked();
+    void on_com_sel_clicked();        // File selection button handler
 
-    void on_docompression_clicked();
+    void on_docompression_clicked();  // Start compression button handler
 
 private:
     Ui::compress *ui;
-     QString selectedFilePath;
-    QTimer* progressTimer;
+     QString selectedFilePath;        // Full path of selected file
+    QTimer* progressTimer;            // Timer for progress updates
 };
 
 #endif // COMPRESS_H

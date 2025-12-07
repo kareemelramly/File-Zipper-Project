@@ -16,7 +16,7 @@ compress::compress(QWidget *parent)
 {
     ui->setupUi(this);
     //ui->progressBar->setVisible(false);
-    ui->percentageLabel->setVisible(false);
+    ui->percentageLabel->setVisible(false);  // Hide progress label initially
     //ui->label->setVisible(false);
 
 }
@@ -43,26 +43,28 @@ compress::~compress()
 
 void compress::on_com_sel_clicked()
 {
+    // Open file dialog to select file
     QString filename = QFileDialog::getOpenFileName(this, "Select and open file", "C:/");
     if (!filename.isEmpty()) {
         QFileInfo fileInfo(filename);
         QString baseName = fileInfo.fileName();
-        ui->com_sel->setText(baseName);            // Show name to user
-        selectedFilePath = filename;            // Store the full path!
+        ui->com_sel->setText(baseName);            // Show just filename to user
+        selectedFilePath = filename;            // Store full path for later use
         qint64 originalSize = fileInfo.size();
-        ui->before->setText(QString::number(originalSize) + " bytes");
+        ui->before->setText(QString::number(originalSize) + " bytes");  // Display original size
     }
 }
 
 
 void compress::on_docompression_clicked()
 {
+    // Check if file was selected
     if (selectedFilePath.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please select a file first!");
         return;
     }
 
-    // Get output path
+    // Ask user where to save compressed file
     QString outputFile = QFileDialog::getSaveFileName(this,
                                                       "Save Compressed File",
                                                       "C:/compressed.huff",
@@ -70,7 +72,7 @@ void compress::on_docompression_clicked()
     if (outputFile.isEmpty())
         return;
 
-    // Show and reset progress UI
+    // Show progress UI
     //ui->progressBar->setVisible(true);
     ui->percentageLabel->setVisible(true);
     //ui->speedLabel->setVisible(true);
@@ -79,24 +81,27 @@ void compress::on_docompression_clicked()
     ui->percentageLabel->setText("0%");
     //ui->speedLabel->setText("0 KB/s");
 
-    // For visual progress during compression (approximation)
+    // Get file size for progress calculation
     QFileInfo inInfo(selectedFilePath);
     qint64 totalBytes = inInfo.size();
 
+    // Setup timer for progress updates
     QElapsedTimer timer;
     timer.start();
 
     QTimer progressTimer;
-    progressTimer.setInterval(100);
+    progressTimer.setInterval(100);  // Update every 100ms
 
+    // Update progress while compressing
     QObject::connect(&progressTimer, &QTimer::timeout, this, [=]() {
         QFile outCheck(outputFile);
         qint64 currentBytes = outCheck.exists() ? outCheck.size() : 0;
 
+        // Calculate compression speed
         double elapsed = timer.elapsed() / 1000.0;
         double speedKBs = elapsed > 0 ? (currentBytes / 1024.0) / elapsed : 0.0;
 
-        // Rough progress based on output size growth
+        // Estimate progress (rough approximation)
         int percentRun = (totalBytes > 0)
                              ? qMin(100, int(100.0 * currentBytes / (totalBytes * 0.6)))
                              : 0;
@@ -104,19 +109,20 @@ void compress::on_docompression_clicked()
         //ui->progressBar->setValue(percentRun);
         //ui->speedLabel->setText(QString::number(speedKBs, 'f', 1) + " KB/s");
 
-        qApp->processEvents();
+        qApp->processEvents();  // Keep UI responsive
     });
 
     progressTimer.start();
 
     try {
+        // Perform actual compression
         Huffman huffman;
         huffman.CompressToFile(selectedFilePath.toStdString(),
                                outputFile.toStdString());
 
         progressTimer.stop();
 
-        // Final compression ratio = compressed size / original size
+        // Calculate final compression ratio
         QFileInfo outInfo(outputFile);
         qint64 compressedSize = outInfo.size();
 
@@ -124,15 +130,14 @@ void compress::on_docompression_clicked()
         if (totalBytes > 0)
             ratioPercent = int(100.0 * compressedSize / totalBytes);
 
+        // Update UI with final results
         // ui->progressBar->setValue(100);  // operation completed
         ui->percentageLabel->setText(QString::number(ratioPercent) + "%");
         //ui->speedLabel->setText("0 KB/s");
         QFileInfo inInfo(selectedFilePath);
         qint64 originalSize = inInfo.size();
 
-
-
-
+        // Display before/after sizes
         ui->before->setText(QString::number(originalSize) + " bytes");
         ui->after->setText(QString::number(compressedSize) + " bytes");
 
